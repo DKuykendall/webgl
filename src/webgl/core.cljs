@@ -5,6 +5,7 @@
             [thi.ng.geom.gl.camera :as cam]
             [thi.ng.geom.triangle :as tri]
             [thi.ng.geom.core :as geom]
+            [thi.ng.geom.gl.webgl.animator :as anim]
             [thi.ng.geom.gl.shaders :as shaders]
             [thi.ng.geom.gl.glmesh :as glmesh]))
 
@@ -16,16 +17,17 @@
 
 (def shader-spec
   {:vs "void main() {
-          gl_Position = proj * view * vec4(position, 1.0);
+          gl_Position = proj * view * model * vec4(position, 1.0);
        }"
    :fs "void main() {
            gl_FragColor = vec4(0.3, 0.3, 1.0, 1.0);
        }"
    :uniforms {:view       :mat4
-              :proj       :mat4}
+              :proj       :mat4
+              :model      :mat4}
    :attribs  {:position   :vec3}})
 
-(def triangle (geom/as-mesh (tri/triangle3 [[1 0 0] [-1 0 0] [0 1 0]])
+(def triangle (geom/as-mesh (tri/triangle3 [[0.8 0 0] [-0.8 0 0] [0 0.8 0]])
                             {:mesh (glmesh/gl-mesh 3)}))
 
 (defn combine-model-shader-and-camera
@@ -36,9 +38,20 @@
       (gl/make-buffers-in-spec gl-ctx glc/static-draw)
       (cam/apply camera)))
 
-(doto gl-ctx
-  (gl/clear-color-and-depth-buffer 0 0 0 1 1)
-  (gl/draw-with-shader (combine-model-shader-and-camera triangle shader-spec camera)))
+(defn spin
+  [t]
+  (geom/rotate-y
+   (geom/rotate-z  mat/M44 1)
+   (/ t 2)))
+
+(defn draw-frame! [t]
+  (doto gl-ctx
+    (gl/clear-color-and-depth-buffer 0 0 0 1 1)
+    (gl/draw-with-shader (assoc-in (combine-model-shader-and-camera triangle shader-spec camera)
+                                   [:uniforms :model] (spin t)))))
+
+(defonce running
+  (anim/animate (fn [t] (draw-frame! t) true)))
 
 ;; define your app data so that it doesn't get over-written on reload
 
