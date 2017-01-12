@@ -10,7 +10,9 @@
                  [org.clojure/clojurescript "1.9.229"]
                  [org.clojure/core.async "0.2.391"
                   :exclusions [org.clojure/tools.reader]]
-                 [thi.ng/geom "0.0.1178-SNAPSHOT"]]
+                 [thi.ng/geom "0.0.1178-SNAPSHOT"]
+                 [thi.ng/math "0.2.1"]]
+
 
   :plugins [[lein-figwheel "0.5.8"]
             [lein-cljsbuild "1.1.4" :exclusions [[org.clojure/clojure]]]]
